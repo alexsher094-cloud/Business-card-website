@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Александр Редоран — Fullstack разработчик</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="editor">
+
+    <div class="titlebar">
+        <div class="dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+        </div>
+        <div class="title">my-portfolio — Visual Studio Code</div>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div class="main">
+
+        <aside class="sidebar">
+            <p class="sidebar-title">EXPLORER</p>
+            <p class="folder">▾ 📁 MY-PORTFOLIO</p>
+
+            <a href="#" class="file" data-file="about_me.py"><span>🐍</span> about_me.py</a>
+            <a href="#" class="file" data-file="my_pip_list.txt"><span>📄</span> my_pip_list.txt</a>
+            <a href="#" class="file" data-file="my_stack.md"><span>📝</span> my_stack.md</a>
+            <a href="#" class="file" data-file="my_awards.md"><span>🏆</span> my_awards.md</a>
+            <a href="#" class="file" data-file="contact.txt"><span>✉️</span> contact.txt</a>
+
+            <div class="folder-group">
+                <div class="folder folder-toggle open" data-folder="my_projects">
+                    <span class="arrow">▾</span> 📁 my_projects
+                </div>
+                <div class="folder-content" data-folder-content="my_projects">
+                    <a href="#" class="file nested" data-file="screenshots.md"><span>🖼️</span> screenshots.md</a>
+                </div>
+            </div>
+        </aside>
+
+        <div class="content">
+
+            <div class="code-area" id="code-area">
+                <div class="empty-state">
+                    <p>👋 Открой файл из проводника слева, чтобы начать</p>
+                    <p class="hint">Совет: введи <code>help</code> в терминале ниже</p>
+                </div>
+            </div>
+
+            <div class="terminal" id="terminal">
+                <div class="term-title">TERMINAL</div>
+                <div class="term-body" id="term-body"></div>
+                <div class="term-input-line">
+                    <span class="prompt">➜</span>
+                    <span class="path">my-portfolio</span>
+                    <span class="git">git:(main)</span>
+                    <input type="text" id="term-input" autocomplete="off" spellcheck="false" autofocus>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Лайтбокс для картинок -->
+<div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Закрыть">×</button>
+    <img id="lightbox-img" src="" alt="">
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<script>
+/* ============================
+   СПИСКИ ИЗ FLASK
+   ============================ */
+const PROJECT_FILES = {{ project_files | tojson }};
+const AWARD_FILES   = {{ award_files   | tojson }};
+
+/* ============================
+   ДАННЫЕ ФАЙЛОВ
+   ============================ */
+const FILES = {
+    "about_me.py": {
+        icon: "🐍",
+        lines: [
+            '<span class="kw">class</span> <span class="cls">Developer</span>:',
+            '    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="var">self</span>):',
+            '        <span class="var">self</span>.name  <span class="op">=</span> <span class="str">"Александр Редоран"</span>',
+            '        <span class="var">self</span>.role  <span class="op">=</span> <span class="str">"Fullstack разработчик"</span>',
+            '        <span class="var">self</span>.stack <span class="op">=</span> [<span class="str">"Python"</span>, <span class="str">"C#"</span>, <span class="str">"Flask"</span>, <span class="str">"HTML"</span>, <span class="str">"CSS"</span>, <span class="str">"cryptography"</span>]',
+            '',
+            '    <span class="kw">def</span> <span class="fn">say_hi</span>(<span class="var">self</span>):',
+            '        <span class="kw">return</span> <span class="str">f"Привет! Я {self.name} 👋"</span>',
+            '',
+            '<span class="var">me</span> <span class="op">=</span> <span class="cls">Developer</span>()',
+            '<span class="fn">print</span>(<span class="var">me</span>.<span class="fn">say_hi</span>())'
+        ]
+    },
+    "my_pip_list.txt": {
+        icon: "📄",
+        lines: [
+            '<span class="op">Package                   Version</span>',
+            '<span class="op">------------------------- ------------------</span>',
+            '<span class="str">aiofiles                  25.1.0</span>',
+            '<span class="str">aiohappyeyeballs          2.7.1</span>',
+            '<span class="str">aiohttp                   3.14.3</span>',
+            '<span class="str">aiosignal                 1.4.0</span>',
+            '<span class="str">altgraph                  0.17.5</span>',
+            '<span class="str">annotated-doc             0.0.4</span>',
+            '<span class="str">annotated-types           0.8.0</span>',
+            '<span class="str">anyio                     4.14.2</span>',
+            '<span class="str">attrs                     26.1.0</span>',
+            '<span class="str">bidict                    0.24.1</span>',
+            '<span class="str">blinker                   1.9.0</span>',
+            '<span class="str">bottle                    0.13.4</span>',
+            '<span class="str">certifi                   2026.6.17</span>',
+            '<span class="str">cffi                      2.0.0</span>',
+            '<span class="str">charset-normalizer        3.5.1</span>',
+            '<span class="str">click                     8.4.2</span>',
+            '<span class="str">clr_loader                0.3.1</span>',
+            '<span class="str">colorama                  0.4.6</span>',
+            '<span class="str">contourpy                 1.3.3</span>',
+            '<span class="str">cryptography              48.0.0</span>',
+            '<span class="str">customtkinter             5.2.2</span>',
+            '<span class="str">cycler                    0.12.1</span>',
+            '<span class="str">cyclopts                  4.25.3</span>',
+            '<span class="str">darkdetect                0.8.0</span>',
+            '<span class="str">DAWG-Python               0.7.2</span>',
+            '<span class="str">defusedxml                0.7.1</span>',
+            '<span class="str">docopt                    0.6.2</span>',
+            '<span class="str">docstring_parser          0.18.0</span>',
+            '<span class="str">docutils                  0.23</span>',
+            '<span class="str">fastapi                   0.141.1</span>',
+            '<span class="str">filelock                  3.29.7</span>',
+            '<span class="str">Flask                     3.1.3</span>',
+            '<span class="str">fonttools                 4.63.0</span>',
+            '<span class="str">frozenlist                1.8.0</span>',
+            '<span class="str">fsspec                    2026.6.0</span>',
+            '<span class="str">future                    1.0.0</span>',
+            '<span class="str">h11                       0.16.0</span>',
+            '<span class="str">hf-xet                    1.5.1</span>',
+            '<span class="str">httpcore                  1.0.9</span>',
+            '<span class="str">httptools                 0.8.0</span>',
+            '<span class="str">httpx                     0.28.1</span>',
+            '<span class="str">huggingface_hub           1.23.0</span>',
+            '<span class="str">idna                      3.18</span>',
+            '<span class="str">ifaddr                    0.2.0</span>',
+            '<span class="str">iso8601                   2.1.0</span>',
+            '<span class="str">itsdangerous              2.2.0</span>',
+            '<span class="str">Jinja2                    3.1.6</span>',
+            '<span class="str">joblib                    1.5.3</span>',
+            '<span class="str">kiwisolver                1.5.0</span>',
+            '<span class="str">lxml                      6.1.1</span>',
+            '<span class="str">markdown-it-py            4.2.0</span>',
+            '<span class="str">markdown2                 2.5.5</span>',
+            '<span class="str">MarkupSafe                3.0.3</span>',
+            '<span class="str">matplotlib                3.10.9</span>',
+            '<span class="str">mdurl                     0.1.2</span>',
+            '<span class="str">mpmath                    1.3.0</span>',
+            '<span class="str">multidict                 6.9.0</span>',
+            '<span class="str">narwhals                  2.24.0</span>',
+            '<span class="str">networkx                  3.6.1</span>',
+            '<span class="str">nicegui                   3.17.1</span>',
+            '<span class="str">nltk                      3.10.0</span>',
+            '<span class="str">numpy                     2.4.6</span>',
+            '<span class="str">orjson                    3.12.0</span>',
+            '<span class="str">packaging                 26.2</span>',
+            '<span class="str">pandas                    3.0.3</span>',
+            '<span class="str">pefile                    2024.8.26</span>',
+            '<span class="str">pillow                    12.2.0</span>',
+            '<span class="str">pip                       26.1.1</span>',
+            '<span class="str">platformdirs              4.11.11</span>',
+            '<span class="str">plotly                    7.1.0</span>',
+            '<span class="str">pooch                     1.9.0</span>',
+            '<span class="str">propcache                 0.5.4</span>',
+            '<span class="str">proxy_tools               0.1.0</span>',
+            '<span class="str">pycparser                 3.0</span>',
+            '<span class="str">pydantic                  2.13.5</span>',
+            '<span class="str">pydantic_core             2.46.5</span>',
+            '<span class="str">Pygments                  2.20.0</span>',
+            '<span class="str">pyinstaller               6.22.3</span>',
+            '<span class="str">pyinstaller-hooks-contrib 2026.7</span>',
+            '<span class="str">pymorphy2                 0.9.1</span>',
+            '<span class="str">pymorphy2-dicts           2.4.393442.3710985</span>',
+            '<span class="str">pymorphy2-dicts-ru        2.4.417127.4579844</span>',
+            '<span class="str">pyparsing                 3.3.2</span>',
+            '<span class="str">pyserial                  3.5</span>',
+            '<span class="str">python-dateutil           2.9.0.post0</span>',
+            '<span class="str">python-docx               1.2.0</span>',
+            '<span class="str">python-dotenv             1.2.3</span>',
+            '<span class="str">python-engineio           4.14.0</span>',
+            '<span class="str">python-multipart          0.0.32</span>',
+            '<span class="str">python-socketio           5.17.0</span>',
+            '<span class="str">pythonnet                 3.1.0</span>',
+            '<span class="str">pyvista                   0.49.0</span>',
+            '<span class="str">pyvista-validation        0.2.2</span>',
+            '<span class="str">pywebview                 6.2.1</span>',
+            '<span class="str">pywin32-ctypes            0.2.3</span>',
+            '<span class="str">PyYAML                    6.0.3</span>',
+            '<span class="str">regex                     2026.7.10</span>',
+            '<span class="str">requests                  2.34.2</span>',
+            '<span class="str">rich                      15.0.0</span>',
+            '<span class="str">rich-rst                  2.1.0</span>',
+            '<span class="str">safetensors               0.8.0</span>',
+            '<span class="str">scikit-learn              1.9.0</span>',
+            '<span class="str">scipy                     1.17.1</span>',
+            '<span class="str">scooby                    0.12.0</span>',
+            '<span class="str">sentence-transformers     5.6.0</span>',
+            '<span class="str">serial                    0.0.97</span>',
+            '<span class="str">setuptools                83.0.0</span>',
+            '<span class="str">shellingham               1.5.4</span>',
+            '<span class="str">simple-websocket          1.1.0</span>',
+            '<span class="str">six                       1.17.0</span>',
+            '<span class="str">starlette                 1.6.0</span>',
+            '<span class="str">sympy                     1.14.0</span>',
+            '<span class="str">threadpoolctl             3.6.0</span>',
+            '<span class="str">tinycss2                  1.5.1</span>',
+            '<span class="str">tokenizers                0.22.2</span>',
+            '<span class="str">torch                     2.13.0</span>',
+            '<span class="str">tqdm                      4.68.4</span>',
+            '<span class="str">transformers              5.13.1</span>',
+            '<span class="str">typer                     0.26.8</span>',
+            '<span class="str">typing_extensions         4.16.0</span>',
+            '<span class="str">typing-inspection         0.4.4</span>',
+            '<span class="str">tzdata                    2026.3</span>',
+            '<span class="str">urllib3                   2.8.0</span>',
+            '<span class="str">uvicorn                   0.53.0</span>',
+            '<span class="str">vedo                      2026.6.1</span>',
+            '<span class="str">vtk                       9.7.0</span>',
+            '<span class="str">watchfiles                1.2.0</span>',
+            '<span class="str">webencodings              0.6.1</span>',
+            '<span class="str">websockets                17.1</span>',
+            '<span class="str">Werkzeug                  3.1.9</span>',
+            '<span class="str">wsproto                   1.3.2</span>',
+            '<span class="str">yarl                      1.25.1</span>'
+        ]
+    },
+    "my_stack.md": {
+        icon: "📝",
+        lines: [
+            '<span class="kw"># My Stack</span>',
+            '',
+            '<span class="kw">## Languages</span>',
+            '<span class="op">-</span> Python 3.x',
+            '<span class="op">-</span> C#',
+            '<span class="op">-</span> HTML5, CSS3, JavaScript',
+            '',
+            '<span class="kw">## Web / Backend</span>',
+            '<span class="op">-</span> Flask, FastAPI',
+            '<span class="op">-</span> uvicorn, starlette',
+            '<span class="op">-</span> NiceGUI, bottle, pywebview',
+            '<span class="op">-</span> python-socketio, python-engineio',
+            '<span class="op">-</span> Jinja2, Werkzeug',
+            '',
+            '<span class="kw">## Async &amp; Networking</span>',
+            '<span class="op">-</span> aiohttp, aiofiles, anyio',
+            '<span class="op">-</span> httpx, requests',
+            '<span class="op">-</span> websockets, wsproto',
+            '',
+            '<span class="kw">## Data &amp; Machine Learning</span>',
+            '<span class="op">-</span> numpy, pandas, scipy',
+            '<span class="op">-</span> scikit-learn, torch',
+            '<span class="op">-</span> transformers, sentence-transformers',
+            '<span class="op">-</span> huggingface_hub, tokenizers, safetensors',
+            '<span class="op">-</span> nltk, pymorphy2',
+            '',
+            '<span class="kw">## Visualization &amp; 3D</span>',
+            '<span class="op">-</span> matplotlib, plotly',
+            '<span class="op">-</span> pyvista, vedo, vtk',
+            '',
+            '<span class="kw">## Desktop &amp; GUI</span>',
+            '<span class="op">-</span> customtkinter, pywebview',
+            '<span class="op">-</span> pyserial, pythonnet',
+            '',
+            '<span class="kw">## Documents &amp; Text</span>',
+            '<span class="op">-</span> python-docx, lxml',
+            '<span class="op">-</span> markdown2, markdown-it-py, docutils',
+            '',
+            '<span class="kw">## Security</span>',
+            '<span class="op">-</span> cryptography, cffi',
+            '',
+            '<span class="kw">## Build &amp; CLI</span>',
+            '<span class="op">-</span> PyInstaller, setuptools, pip',
+            '<span class="op">-</span> rich, typer, click, cyclopts',
+            '',
+            '<span class="kw">## Config &amp; Validation</span>',
+            '<span class="op">-</span> pydantic, python-dotenv, PyYAML',
+            '',
+            '<span class="kw">## Tools</span>',
+            '<span class="op">-</span> Git, VS Code',
+            '<span class="op">-</span> Python 3.x'
+        ]
+    },
+    "my_awards.md": {
+        icon: "🏆",
+        lines: []   // заполнится ниже из AWARD_FILES
+    },
+    "screenshots.md": {
+        icon: "🖼️",
+        lines: []   // заполнится ниже из PROJECT_FILES
+    },
+    "contact.txt": {
+        icon: "✉️",
+        lines: [
+            '<span class="var">Name</span>     : <span class="str">Александр Редоран</span>',
+            '<span class="var">Role</span>     : <span class="str">Fullstack разработчик</span>',
+            '<span class="var">Email</span>    : <a href="mailto:alexsher094@gmail.com" target="_blank" class="link">alexsher094@gmail.com</a>',
+            '<span class="var">Telegram</span> : <a href="https://t.me/theEridanVoid" target="_blank" class="link">@theEridanVoid</a>',
+            '<span class="var">VK</span>       : <a href="https://vk.ru/theeridanvoid" target="_blank" class="link">vk.ru/theeridanvoid</a>',
+            '<span class="var">GitHub</span>   : <a href="https://github.com/alexsher094-cloud" target="_blank" class="link">github.com/alexsher094-cloud</a>'
+        ]
+    }
+};
+
+/* ============================
+   УТИЛИТА: превратить имя файла в читаемый заголовок
+   "Project1 - cryptomail (pet).jpg" → "Project1 cryptomail (pet)"
+   ============================ */
+function fileToTitle(filename) {
+    const baseName = filename.replace(/\.[^.]+$/, '');
+    return baseName.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/* ============================
+   ГЕНЕРАЦИЯ screenshots.md ИЗ ФАЙЛОВ ПАПКИ
+   ============================ */
+function buildScreenshots(files) {
+    if (!files.length) {
+        return [
+            '<span class="kw"># Project Screenshots</span>',
+            '',
+            '<span class="op">Пока пусто. Положи картинки в static/projects/ и обнови страницу.</span>'
+        ];
+    }
+
+    const lines = [
+        '<span class="kw"># Project Screenshots</span>',
+        '',
+        '<span class="op">Галерея моих проектов — ' + files.length + ' шт.</span>',
+        ''
+    ];
+
+    files.forEach((filename) => {
+        const title = fileToTitle(filename);
+
+        lines.push('<span class="kw">## 📸 ' + title + '</span>');
+        lines.push(
+            '<div class="md-image-wrap">' +
+                '<img src="/static/projects/' + encodeURIComponent(filename) + '" ' +
+                     'alt="' + title + '" ' +
+                     'onerror="this.parentElement.classList.add(\'missing\')">' +
+            '</div>'
+        );
+        lines.push('');
+    });
+
+    return lines;
+}
+
+/* ============================
+   ГЕНЕРАЦИЯ my_awards.md ИЗ ФАЙЛОВ ПАПКИ
+   ============================ */
+function buildAwards(files) {
+    if (!files.length) {
+        return [
+            '<span class="kw"># My Awards</span>',
+            '',
+            '<span class="op">Пока пусто. Положи картинки в static/awards/ и обнови страницу.</span>'
+        ];
+    }
+
+    const lines = [
+        '<span class="kw"># My Awards</span>',
+        '',
+        '<span class="op">Diplomas and certificates from various competitions — ' + files.length + ' шт.</span>',
+        ''
+    ];
+
+    files.forEach((filename) => {
+        const title = fileToTitle(filename);
+
+        lines.push('<span class="kw">## 🏆 ' + title + '</span>');
+        lines.push(
+            '<div class="md-image-wrap">' +
+                '<img src="/static/awards/' + encodeURIComponent(filename) + '" ' +
+                     'alt="' + title + '" ' +
+                     'onerror="this.parentElement.classList.add(\'missing\')">' +
+            '</div>'
+        );
+        lines.push('');
+    });
+
+    return lines;
+}
+
+FILES["screenshots.md"].lines = buildScreenshots(PROJECT_FILES);
+FILES["my_awards.md"].lines   = buildAwards(AWARD_FILES);
+
+/* ============================
+   ВКЛАДКИ
+   ============================ */
+const tabsBar  = document.getElementById("tabs");
+const codeArea = document.getElementById("code-area");
+const openTabs = new Set();
+let   activeFile = null;
+
+function openFile(name) {
+    if (!FILES[name]) return;
+
+    if (!openTabs.has(name)) {
+        openTabs.add(name);
+        const tab = document.createElement("div");
+        tab.className = "tab";
+        tab.dataset.file = name;
+        tab.innerHTML = `
+            <span class="icon">${FILES[name].icon}</span>
+            <span class="tab-name">${name}</span>
+            <span class="close" data-close="${name}">×</span>
+        `;
+        tab.addEventListener("click", (e) => {
+            if (e.target.classList.contains("close")) {
+                closeTab(name);
+            } else {
+                activateTab(name);
+            }
+        });
+        tabsBar.appendChild(tab);
+    }
+    activateTab(name);
+}
+
+function closeTab(name) {
+    const tab = tabsBar.querySelector(`.tab[data-file="${name}"]`);
+    if (tab) tab.remove();
+    openTabs.delete(name);
+
+    if (activeFile === name) {
+        const remaining = [...openTabs];
+        if (remaining.length) {
+            activateTab(remaining[remaining.length - 1]);
+        } else {
+            activeFile = null;
+            showEmptyState();
+        }
+    }
+    updateSidebarActive();
+}
+
+function activateTab(name) {
+    activeFile = name;
+
+    tabsBar.querySelectorAll(".tab").forEach(t =>
+        t.classList.toggle("active", t.dataset.file === name)
+    );
+
+    updateSidebarActive();
+
+    const file = FILES[name];
+    const linesHtml = file.lines.map((line, i) =>
+        `<div class="code-line">
+            <span class="line-num">${i + 1}</span>
+            <div class="line-text">${line || " "}</div>
+         </div>`
+    ).join("");
+    codeArea.innerHTML = linesHtml;
+    codeArea.scrollTop = 0;
+
+    const activeTab = tabsBar.querySelector(`.tab[data-file="${name}"]`);
+    if (activeTab) {
+        activeTab.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "nearest"
+        });
+    }
+}
+
+function updateSidebarActive() {
+    document.querySelectorAll(".sidebar .file").forEach(el =>
+        el.classList.toggle("active", el.dataset.file === activeFile)
+    );
+}
+
+function showEmptyState() {
+    codeArea.innerHTML = `
+        <div class="empty-state">
+            <p>👋 Открой файл из проводника слева, чтобы начать</p>
+            <p class="hint">Совет: введи <code>help</code> в терминале ниже</p>
+        </div>
+    `;
+}
+
+/* Клик по файлу в сайдбаре */
+document.querySelectorAll(".sidebar .file").forEach(el => {
+    el.addEventListener("click", (e) => {
+        e.preventDefault();
+        openFile(el.dataset.file);
+    });
+});
+
+/* Раскрытие/закрытие папок */
+document.querySelectorAll(".folder-toggle").forEach(el => {
+    el.addEventListener("click", () => {
+        const folderName = el.dataset.folder;
+        const content = document.querySelector(`[data-folder-content="${folderName}"]`);
+        if (!content) return;
+
+        const isOpen = el.classList.toggle("open");
+        el.querySelector(".arrow").textContent = isOpen ? "▾" : "▸";
+        content.style.display = isOpen ? "" : "none";
+    });
+});
+
+/* Прокрутка вкладок колёсиком */
+tabsBar.addEventListener("wheel", (e) => {
+    if (e.deltaY === 0) return;
+    e.preventDefault();
+    tabsBar.scrollLeft += e.deltaY;
+}, { passive: false });
+
+/* ============================
+   ТЕРМИНАЛ
+   ============================ */
+const termBody  = document.getElementById("term-body");
+const termInput = document.getElementById("term-input");
+
+function stripHtml(html) {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    return tmp.textContent;
+}
+
+function printTerm(text, cls = "") {
+    const line = document.createElement("div");
+    line.className = "term-line " + cls;
+    line.textContent = text;
+    termBody.appendChild(line);
+    termBody.scrollTop = termBody.scrollHeight;
+}
+
+function printPrompt(command) {
+    const line = document.createElement("div");
+    line.className = "term-line";
+    line.innerHTML = `<span class="prompt">➜</span> <span class="path">my-portfolio</span> <span class="git">git:(main)</span> <span class="cmd">${command}</span>`;
+    termBody.appendChild(line);
+    termBody.scrollTop = termBody.scrollHeight;
+}
+
+function clearTerm() {
+    termBody.innerHTML = "";
+}
+
+const COMMANDS = {
+    help() {
+        printTerm("Доступные команды:", "info");
+        printTerm("  help              — этот список");
+        printTerm("  ls                — список файлов");
+        printTerm("  cat <file>        — показать содержимое файла");
+        printTerm("  whoami            — кто я");
+        printTerm("  contacts          — мои контакты");
+        printTerm("  screenshots       — список скриншотов");
+        printTerm("  awards            — список наград");
+        printTerm("  echo <text>       — вывести текст");
+        printTerm("  clear             — очистить терминал");
+        printTerm("  open <file>       — открыть файл во вкладке");
+    },
+    ls() {
+        printTerm("about_me.py   my_pip_list.txt   my_stack.md   my_awards.md   contact.txt");
+        printTerm("my_projects/");
+        printTerm("  └── screenshots.md", "info");
+    },
+    cat(args) {
+        if (!args.length) {
+            printTerm("usage: cat <filename>", "error");
+            return;
+        }
+        const f = FILES[args[0]];
+        if (!f) {
+            printTerm(`cat: ${args[0]}: No such file or directory`, "error");
+            return;
+        }
+        f.lines.forEach(l => printTerm(stripHtml(l)));
+    },
+    whoami() {
+        printTerm("Александр Редоран — Fullstack разработчик 👋");
+    },
+    contacts() {
+        printTerm("📧 Email    : alexsher094@gmail.com");
+        printTerm("✈️  Telegram : @theEridanVoid");
+        printTerm("🅥  VK       : vk.ru/theeridanvoid");
+        printTerm("💻 GitHub   : github.com/alexsher094-cloud");
+    },
+    screenshots() {
+        if (!PROJECT_FILES.length) {
+            printTerm("Нет скриншотов в static/projects/", "info");
+            return;
+        }
+        printTerm(`Найдено ${PROJECT_FILES.length} скриншот(ов):`, "info");
+        PROJECT_FILES.forEach(f => printTerm("  • " + f));
+    },
+    awards() {
+        if (!AWARD_FILES.length) {
+            printTerm("Нет наград в static/awards/", "info");
+            return;
+        }
+        printTerm(`Найдено ${AWARD_FILES.length} награды(д):`, "info");
+        AWARD_FILES.forEach(f => printTerm("  • " + f));
+    },
+    echo(args) {
+        printTerm(args.join(" "));
+    },
+    clear() {
+        clearTerm();
+    },
+    open(args) {
+        if (!args.length) {
+            printTerm("usage: open <filename>", "error");
+            return;
+        }
+        if (!FILES[args[0]]) {
+            printTerm(`open: ${args[0]}: No such file`, "error");
+            return;
+        }
+        openFile(args[0]);
+        printTerm(`Открыл ${args[0]}`, "info");
+    }
+};
+
+termInput.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+
+    const raw = termInput.value.trim();
+    termInput.value = "";
+    if (!raw) return;
+
+    printPrompt(raw);
+
+    const [cmd, ...args] = raw.split(/\s+/);
+    if (COMMANDS[cmd]) {
+        COMMANDS[cmd](args);
+    } else {
+        printTerm(`command not found: ${cmd}. Введи "help"`, "error");
+    }
+});
+
+/* ============================
+   ЛАЙТБОКС (клик по картинке)
+   ============================ */
+const lightbox        = document.getElementById("lightbox");
+const lightboxImg     = document.getElementById("lightbox-img");
+const lightboxCaption = document.getElementById("lightbox-caption");
+const lightboxClose   = document.getElementById("lightbox-close");
+
+function openLightbox(src, caption) {
+    lightboxImg.src = src;
+    lightboxImg.alt = caption || "";
+    lightboxCaption.textContent = caption || "";
+    lightbox.classList.add("open");
+    document.body.style.overflow = "hidden";
+}
+
+function closeLightbox() {
+    lightbox.classList.remove("open");
+    document.body.style.overflow = "";
+    setTimeout(() => {
+        if (!lightbox.classList.contains("open")) {
+            lightboxImg.src = "";
+        }
+    }, 250);
+}
+
+codeArea.addEventListener("click", (e) => {
+    const img = e.target.closest(".md-image-wrap:not(.missing) img");
+    if (!img) return;
+    e.preventDefault();
+    openLightbox(img.src, img.alt);
+});
+
+lightboxClose.addEventListener("click", closeLightbox);
+
+lightbox.addEventListener("click", (e) => {
+    if (e.target === lightbox) closeLightbox();
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && lightbox.classList.contains("open")) {
+        closeLightbox();
+    }
+});
+
+/* Клик по терминалу → фокус в input */
+document.getElementById("terminal").addEventListener("click", () => termInput.focus());
+
+/* Приветствие */
+printTerm("my-portfolio terminal v1.0 — введи 'help' для списка команд", "info");
+</script>
+
+</body>
+</html>

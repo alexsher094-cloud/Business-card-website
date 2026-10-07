@@ -1,0 +1,14 @@
+my-site/
+├── app.py
+├── templates/
+│   └── index.html
+└── static/
+    ├── style.css
+    ├── awards/          ← для дипломов
+    │   ├── hackathon-2024.jpg
+    │   ├── olympiad.jpg
+    │   └── webcontest.jpg
+    └── projects/        ← для скринов проектов (новая)
+        ├── dashboard.jpg
+        ├── shop.jpg
+        └── tgbot.jpg
